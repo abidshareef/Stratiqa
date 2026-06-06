@@ -32,6 +32,7 @@ yarn-error.log*
 secrets/
 
 # ---- Editors / OS ----
+.claude/
 .vscode/
 .idea/
 .DS_Store

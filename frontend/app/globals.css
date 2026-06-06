@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+/*
+  STRATIQA design system — dark mode first.
+  No gradients, neon, glow, glassmorphism, 3D, or flashy animation.
+  Subtle motion only (hover elevation, counters, chart entry, page transitions).
+*/
+
+:root {
+  --background: #0a0a0a; /* app background */
+  --surface: #111111; /* raised surface / nav */
+  --card: #171717; /* card background */
+  --border: #262626; /* hairline borders */
+  --foreground: #ededed; /* primary text */
+  --muted: #a1a1aa; /* secondary text */
+  --muted-foreground: #71717a; /* tertiary text */
+
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #38bdf8;
+
+  --radius: 0.625rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-border: var(--border);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-jetbrains-mono);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+}
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Metric numerals use the mono face per the design system. */
+.metric {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Subtle counter / entry animation. */
+@keyframes stratiqa-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-rise {
+  animation: stratiqa-rise 0.35s ease-out both;
+}
