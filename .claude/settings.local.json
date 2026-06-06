@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c ' *)",
+      "Bash(python *)",
+      "Bash(PYTHONIOENCODING=utf-8 python *)",
+      "Bash(git init *)",
+      "Bash(git config *)",
+      "Bash(gh --version)",
+      "Bash(gh auth *)",
+      "PowerShell($gh = Get-Command gh -ErrorAction SilentlyContinue; if \\($gh\\) { \"gh found: $\\($gh.Source\\)\" } else { \"gh: not found\" }; if \\($env:GH_TOKEN\\) { \"GH_TOKEN set\" } elseif \\($env:GITHUB_TOKEN\\) { \"GITHUB_TOKEN set\" } else { \"no token env var\" }; $wg = Get-Command winget -ErrorAction SilentlyContinue; if \\($wg\\) { \"winget available\" } else { \"winget not found\" })",
+      "Bash(git remote *)",
+      "Bash(git branch *)",
+      "Bash(git add *)",
+      "Bash(git commit -q -m ' *)",
+      "Bash(git push *)"
+    ]
+  }
+}

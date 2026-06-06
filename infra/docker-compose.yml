@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: stratiqa-postgres
+    environment:
+      POSTGRES_USER: stratiqa
+      POSTGRES_PASSWORD: stratiqa
+      POSTGRES_DB: stratiqa
+    ports:
+      - "5432:5432"
+    volumes:
+      - stratiqa_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stratiqa"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: stratiqa-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - stratiqa_redisdata:/data
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: stratiqa-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - stratiqa_qdrantdata:/qdrant/storage
+
+volumes:
+  stratiqa_pgdata:
+  stratiqa_redisdata:
+  stratiqa_qdrantdata:
