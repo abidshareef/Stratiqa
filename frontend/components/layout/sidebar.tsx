@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Bot,
   FileText,
   FolderKanban,
   LayoutDashboard,
   Lightbulb,
   Network,
+  Share2,
   Siren,
   Sparkles,
   Target,
@@ -18,10 +20,12 @@ import { cn } from "@/lib/utils";
 const NAV = [
   { href: "/dashboard", label: "STRATIQA One", icon: LayoutDashboard },
   { href: "/war-room", label: "War Room", icon: Siren },
+  { href: "/agents", label: "AI Agents", icon: Bot },
   { href: "/goals", label: "Goals", icon: Target },
   { href: "/projects", label: "Projects", icon: FolderKanban },
   { href: "/recommendations", label: "Recommendations", icon: Lightbulb },
   { href: "/twin", label: "Business Twin", icon: Network },
+  { href: "/graph", label: "Knowledge Graph", icon: Share2 },
   { href: "/reports", label: "Reports", icon: FileText },
   { href: "/ask", label: "Ask", icon: Sparkles },
 ];

@@ -12,6 +12,11 @@ env/
 .coverage
 htmlcov/
 
+# Local dev / test SQLite databases (production uses PostgreSQL)
+*.db
+*.sqlite
+*.sqlite3
+
 # ---- Node / Frontend ----
 node_modules/
 .next/

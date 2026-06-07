@@ -1,5 +1,14 @@
 import { useAuthStore } from "./store";
-import type { AuthResult } from "./types";
+import type {
+  AgentAskResponse,
+  AgentDetail,
+  AgentRoster,
+  AuthResult,
+  BusinessBlueprintOut,
+  DiscoveryResult,
+  FounderInterview,
+  GraphOut,
+} from "./types";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000/api/v1";
@@ -88,6 +97,26 @@ export async function login(email: string, password: string): Promise<AuthResult
   return result;
 }
 
+export async function register(input: {
+  email: string;
+  password: string;
+  full_name: string;
+  organization_name: string;
+}): Promise<AuthResult> {
+  const result = await apiFetch<AuthResult>("/auth/register", {
+    method: "POST",
+    auth: false,
+    body: input,
+  });
+  useAuthStore.getState().setSession({
+    user: result.user,
+    organization: result.organization,
+    accessToken: result.tokens.access_token,
+    refreshToken: result.tokens.refresh_token,
+  });
+  return result;
+}
+
 export async function logout(): Promise<void> {
   try {
     await apiFetch("/auth/logout", { method: "POST" });
@@ -95,4 +124,55 @@ export async function logout(): Promise<void> {
     /* best-effort; clear locally regardless */
   }
   useAuthStore.getState().clear();
+}
+
+// --- Business Discovery ------------------------------------------------------
+
+export async function runDiscovery(
+  input: FounderInterview,
+): Promise<DiscoveryResult> {
+  return apiFetch<DiscoveryResult>("/discovery/run", {
+    method: "POST",
+    body: input,
+  });
+}
+
+/** Returns the org's latest blueprint, or null if discovery hasn't run yet. */
+export async function getBlueprint(): Promise<BusinessBlueprintOut | null> {
+  try {
+    return await apiFetch<BusinessBlueprintOut>("/discovery/blueprint");
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return null;
+    throw err;
+  }
+}
+
+// --- Knowledge Graph ---------------------------------------------------------
+
+export async function getGraph(): Promise<GraphOut> {
+  return apiFetch<GraphOut>("/knowledge-graph");
+}
+
+export async function rebuildGraph(): Promise<GraphOut> {
+  return apiFetch<GraphOut>("/knowledge-graph/rebuild", { method: "POST" });
+}
+
+// --- AI Agents ---------------------------------------------------------------
+
+export async function getAgents(): Promise<AgentRoster> {
+  return apiFetch<AgentRoster>("/agents");
+}
+
+export async function getAgent(agentType: string): Promise<AgentDetail> {
+  return apiFetch<AgentDetail>(`/agents/${agentType}`);
+}
+
+export async function askAgent(
+  agentType: string,
+  query: string,
+): Promise<AgentAskResponse> {
+  return apiFetch<AgentAskResponse>(`/agents/${agentType}/ask`, {
+    method: "POST",
+    body: { query },
+  });
 }

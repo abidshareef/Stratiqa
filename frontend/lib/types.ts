@@ -273,3 +273,128 @@ export interface SimulationResultOut {
   simulation: SimulationOut;
   outcome: SimulationOutcome;
 }
+
+// --- Business Discovery / Onboarding ----------------------------------------
+
+export interface FounderInterview {
+  industry: string;
+  business_model: string;
+  company_size: string;
+  annual_revenue: number | null;
+  employee_count: number | null;
+  primary_goals: string[];
+  main_challenges: string[];
+  target_market: string | null;
+}
+
+export interface BusinessProfileOut {
+  id: string;
+  industry: string | null;
+  business_model: string | null;
+  company_size: string | null;
+  annual_revenue: number | null;
+  employee_count: number | null;
+}
+
+export interface BusinessDNAOut {
+  id: string;
+  growth_stage: string | null;
+  risk_profile: string | null;
+  operational_complexity: string | null;
+  market_type: string | null;
+  generated_at: string;
+}
+
+export interface BlueprintJson {
+  industry: string | null;
+  revenue_model: string | null;
+  growth_profile: string;
+  risk_profile: string;
+  operational_complexity: string;
+  market_type: string;
+  stated_goals: string[];
+  key_challenges: string[];
+  recommended_focus_areas: string[];
+  suggested_kpis: string[];
+}
+
+export interface BusinessBlueprintOut {
+  id: string;
+  blueprint_json: BlueprintJson;
+  generated_at: string;
+}
+
+export interface DiscoveryResult {
+  profile: BusinessProfileOut;
+  dna: BusinessDNAOut;
+  blueprint: BusinessBlueprintOut;
+}
+
+// --- Knowledge Graph --------------------------------------------------------
+
+export interface GraphNode {
+  id: string;
+  label: string;
+  type: string;
+  category: string;
+  value: number | null;
+  detail: string | null;
+}
+
+export interface GraphEdge {
+  source: string;
+  target: string;
+  type: string;
+}
+
+export interface GraphOut {
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+  stats: Record<string, number>;
+  generated_at: string;
+}
+
+// --- AI Agents --------------------------------------------------------------
+
+export interface AgentInsight {
+  agent_type: string;
+  title: string;
+  finding: string;
+  severity: "info" | "warning" | "danger" | "success";
+  confidence_score: number;
+  data_sources: string[];
+  metric: string | null;
+  recommended_action: string | null;
+}
+
+export interface AgentSummary {
+  agent_type: string;
+  name: string;
+  domain: string;
+  status: string;
+  headline: string;
+  insight_count: number;
+  top_severity: string;
+}
+
+export interface AgentDetail {
+  agent_type: string;
+  name: string;
+  domain: string;
+  status: string;
+  insights: AgentInsight[];
+}
+
+export interface AgentRoster {
+  agents: AgentSummary[];
+  generated_at: string;
+}
+
+export interface AgentAskResponse {
+  agent_type: string;
+  name: string;
+  answer: string;
+  confidence_score: number;
+  data_sources: string[];
+  insights: AgentInsight[];
+}

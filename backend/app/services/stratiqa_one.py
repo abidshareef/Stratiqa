@@ -15,6 +15,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session as DBSession
 
 from app.models.analytics import Opportunity
+from app.models.discovery import BusinessDNA
 from app.models.goals import StrategicGoal
 from app.models.identity import Organization
 from app.models.projects import Project, ProjectRisk, Task
@@ -27,7 +28,7 @@ from app.schemas.stratiqa_one import (
     RiskItem,
     WarRoom,
 )
-from app.services import recommendation_engine
+from app.services import business_twin, recommendation_engine
 
 
 def _risks(db: DBSession, org_id: uuid.UUID, only_critical: bool = False) -> list[RiskItem]:
@@ -193,10 +194,25 @@ def _business_events(db: DBSession, org_id: uuid.UUID) -> list[dict]:
 
 
 def _twin_insights(db: DBSession, org_id: uuid.UUID) -> list[str]:
-    return [
-        "Run a Business Twin simulation to pressure-test your next strategic move.",
-        "Marketing and expansion levers show the highest revenue sensitivity in this model.",
-    ]
+    """Grounded framing for the Business Twin, anchored to the org's own data."""
+    out: list[str] = []
+    revenue = business_twin.latest_revenue_kpi(db, org_id)
+    if revenue:
+        out.append(
+            f"Simulations scale percentage impacts against your latest monthly "
+            f"revenue anchor of ${revenue:,.0f}."
+        )
+    dna = db.scalar(select(BusinessDNA).where(BusinessDNA.organization_id == org_id))
+    if dna and dna.risk_profile:
+        out.append(
+            f"Your '{dna.risk_profile}' risk profile sets the twin's baseline "
+            "operating risk before any levers are applied."
+        )
+    out.append(
+        "Marketing and market-expansion levers carry the highest revenue "
+        "sensitivity in the current model — test them first."
+    )
+    return out
 
 
 def ask(db: DBSession, org_id: uuid.UUID, query: str) -> AskResponse:

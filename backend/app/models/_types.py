@@ -11,14 +11,18 @@ from __future__ import annotations
 from typing import Any
 
 from sqlalchemy import ForeignKey
-from sqlalchemy.dialects.postgresql import UUID as PgUUID  # noqa: N811
 from sqlalchemy.orm import mapped_column
+
+# Re-exported here so models can import persistence types from one place.
+from app.core.database import GUID, JSONB  # noqa: F401
+
+__all__ = ["fk", "fk_optional", "GUID", "JSONB"]
 
 
 def fk(target: str, *, ondelete: str = "CASCADE") -> Any:
     """A required UUID foreign-key column. ``target`` is e.g. 'organizations.id'."""
     return mapped_column(
-        PgUUID(as_uuid=True),
+        GUID,
         ForeignKey(target, ondelete=ondelete),
         nullable=False,
         index=True,
@@ -28,7 +32,7 @@ def fk(target: str, *, ondelete: str = "CASCADE") -> Any:
 def fk_optional(target: str, ondelete: str = "SET NULL") -> Any:
     """A nullable UUID foreign-key column."""
     return mapped_column(
-        PgUUID(as_uuid=True),
+        GUID,
         ForeignKey(target, ondelete=ondelete),
         nullable=True,
         index=True,

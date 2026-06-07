@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -104,6 +105,12 @@ export default function LoginPage() {
         </div>
 
         <p className="mt-4 text-center text-xs text-muted-foreground">
+          New to STRATIQA?{" "}
+          <Link href="/signup" className="text-primary hover:underline">
+            Create an account
+          </Link>
+        </p>
+        <p className="mt-2 text-center text-xs text-muted-foreground">
           Demo: founder@stratiqa.dev / stratiqa123
         </p>
       </div>

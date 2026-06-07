@@ -9,11 +9,23 @@ import uuid
 from datetime import datetime
 from typing import Annotated
 
-from sqlalchemy import DateTime, MetaData, create_engine, func
-from sqlalchemy.dialects.postgresql import UUID as PgUUID  # noqa: N811
+from sqlalchemy import JSON, DateTime, MetaData, Uuid, create_engine, func
+from sqlalchemy.dialects.postgresql import JSONB as PgJSONB  # noqa: N811
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 
 from app.core.config import settings
+
+# --- Portable column types -------------------------------------------------
+# Production target is PostgreSQL (native ``UUID`` + ``JSONB``), but the model
+# layer stays dialect-agnostic so the full stack can boot and be tested against
+# SQLite without external infrastructure. ``with_variant`` keeps the native
+# Postgres representation in production while falling back gracefully elsewhere.
+
+#: Dialect-aware UUID: native ``uuid`` on PostgreSQL, ``CHAR(32)`` elsewhere.
+GUID = Uuid(as_uuid=True)
+
+#: ``JSONB`` on PostgreSQL, generic ``JSON`` (TEXT-backed) on other dialects.
+JSONB = JSON().with_variant(PgJSONB(), "postgresql")
 
 # Consistent naming convention keeps Alembic migrations deterministic.
 NAMING_CONVENTION = {
@@ -42,7 +54,7 @@ class Base(DeclarativeBase):
 
 UUIDPk = Annotated[
     uuid.UUID,
-    mapped_column(PgUUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
+    mapped_column(GUID, primary_key=True, default=uuid.uuid4),
 ]
 
 

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -14,12 +16,21 @@ from app.schemas.common import HealthStatus
 configure_logging()
 logger = get_logger()
 
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    logger.info("stratiqa.startup", env=settings.env, api_prefix=settings.api_prefix)
+    yield
+    logger.info("stratiqa.shutdown")
+
+
 app = FastAPI(
     title=f"{settings.project_name} API",
     description="AI-Powered Business Operating System — backend.",
     version="0.1.0",
     docs_url="/docs",
     openapi_url="/openapi.json",
+    lifespan=lifespan,
 )
 
 # --- Middleware (order matters: security headers outermost) ---
@@ -50,8 +61,3 @@ def root() -> dict:
         "docs": "/docs",
         "api_prefix": settings.api_prefix,
     }
-
-
-@app.on_event("startup")
-def _on_startup() -> None:
-    logger.info("stratiqa.startup", env=settings.env, api_prefix=settings.api_prefix)

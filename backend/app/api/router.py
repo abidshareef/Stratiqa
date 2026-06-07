@@ -5,11 +5,13 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from app.api.v1 import (
+    agents,
     analytics,
     auth,
     briefs,
     discovery,
     goals,
+    knowledge_graph,
     organizations,
     projects,
     recommendations,
@@ -30,3 +32,5 @@ api_router.include_router(reports.router)
 api_router.include_router(briefs.router)
 api_router.include_router(stratiqa_one.router)
 api_router.include_router(twin.router)
+api_router.include_router(knowledge_graph.router)
+api_router.include_router(agents.router)

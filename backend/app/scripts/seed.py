@@ -19,7 +19,13 @@ from app.models.analytics import KPI, Opportunity
 from app.models.goals import GoalProgress, StrategicGoal
 from app.models.identity import Organization, OrganizationUser, Role, User
 from app.models.projects import Milestone, Project, ProjectRisk, Task
-from app.services import recommendation_engine
+from app.schemas.discovery import FounderInterview
+from app.services import (
+    agents,
+    discovery_service,
+    knowledge_graph,
+    recommendation_engine,
+)
 
 DEMO_EMAIL = "founder@stratiqa.dev"
 DEMO_PASSWORD = "stratiqa123"  # demo only — never a real credential
@@ -271,8 +277,34 @@ def seed() -> None:
 
         db.flush()
 
+        # Run Business Discovery so the demo org has a Business DNA + Blueprint
+        # (the goal titles match the seeded goals above, so no duplicates).
+        discovery_service.run_discovery(
+            db,
+            org.id,
+            FounderInterview(
+                industry="Manufacturing",
+                business_model="Hardware + maintenance contracts",
+                company_size="51-200",
+                annual_revenue=4_200_000,
+                employee_count=120,
+                primary_goals=["Reach $5M ARR", "Launch EU market"],
+                main_challenges=[
+                    "Supplier delays on critical components",
+                    "EU regulatory readiness",
+                    "Hiring automation engineers",
+                ],
+                target_market="B2B enterprise manufacturers",
+            ),
+        )
+
         # Generate grounded recommendations from the seeded data.
         recs = recommendation_engine.refresh_recommendations(db, org.id)
+
+        # Register the specialist agent roster and materialize the knowledge graph
+        # (knowledge graph is built last so it captures the recommendations too).
+        agents.ensure_agents(db, org.id)
+        knowledge_graph.rebuild_graph(db, org.id)
 
         db.commit()
         print("Seed complete.")
