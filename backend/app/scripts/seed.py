@@ -16,6 +16,7 @@ from sqlalchemy import select
 from app.core.database import Base, SessionLocal, engine
 from app.core.security import hash_password
 from app.models.analytics import KPI, Opportunity
+from app.models.customers import Customer, CustomerHealth, CustomerInsight, SupportTicket
 from app.models.goals import GoalProgress, StrategicGoal
 from app.models.identity import Organization, OrganizationUser, Role, User
 from app.models.projects import Milestone, Project, ProjectRisk, Task
@@ -274,6 +275,48 @@ def seed() -> None:
                 ),
             ]
         )
+
+        # --- Customer base: health, churn risk, support, and insights ---
+        # A varied book of business so retention intelligence has real signal:
+        # two clearly at-risk accounts (churn >= 60) plus healthy anchors.
+        customer_specs = [
+            ("Atlas Manufacturing", "Enterprise", 42, 72, 3),
+            ("Meridian Logistics", "Enterprise", 55, 64, 2),
+            ("Cobalt Devices", "Mid-Market", 68, 38, 1),
+            ("Northstar Foods", "Mid-Market", 81, 18, 0),
+            ("Pioneer Aerospace", "Enterprise", 88, 12, 0),
+            ("Vertex Tooling", "SMB", 76, 22, 0),
+        ]
+        for name, segment, health, churn, open_tickets in customer_specs:
+            cust = Customer(
+                organization_id=org.id, customer_name=name, segment=segment
+            )
+            db.add(cust)
+            db.flush()
+            db.add(
+                CustomerHealth(
+                    customer_id=cust.id, health_score=health, churn_risk=churn
+                )
+            )
+            for t in range(open_tickets):
+                db.add(
+                    SupportTicket(
+                        customer_id=cust.id,
+                        title=f"Escalation #{t + 1} from {name}",
+                        status="open",
+                        priority="high" if churn >= 60 else "medium",
+                    )
+                )
+            if churn >= 60:
+                db.add(
+                    CustomerInsight(
+                        customer_id=cust.id,
+                        insight=(
+                            f"{name} shows churn risk {churn}% with "
+                            f"{open_tickets} open ticket(s) — schedule an executive review."
+                        ),
+                    )
+                )
 
         db.flush()
 

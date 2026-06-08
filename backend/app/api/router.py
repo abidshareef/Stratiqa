@@ -9,6 +9,7 @@ from app.api.v1 import (
     analytics,
     auth,
     briefs,
+    customers,
     discovery,
     goals,
     knowledge_graph,
@@ -34,3 +35,4 @@ api_router.include_router(stratiqa_one.router)
 api_router.include_router(twin.router)
 api_router.include_router(knowledge_graph.router)
 api_router.include_router(agents.router)
+api_router.include_router(customers.router)

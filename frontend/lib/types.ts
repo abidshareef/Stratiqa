@@ -354,6 +354,42 @@ export interface GraphOut {
   generated_at: string;
 }
 
+// --- Customer Intelligence --------------------------------------------------
+
+export interface CustomerHealthOut {
+  id: string;
+  customer_name: string;
+  segment: string | null;
+  health_score: number | null;
+  churn_risk: number | null;
+  open_tickets: number;
+  status: "healthy" | "watch" | "at_risk";
+}
+
+export interface CustomerStats {
+  total_customers: number;
+  avg_health_score: number | null;
+  avg_churn_risk: number | null;
+  at_risk_count: number;
+  open_tickets: number;
+}
+
+export interface CustomerSignal {
+  title: string;
+  finding: string;
+  severity: "info" | "warning" | "danger" | "success";
+  confidence_score: number;
+  data_sources: string[];
+  recommended_action: string | null;
+}
+
+export interface CustomerOverview {
+  stats: CustomerStats;
+  customers: CustomerHealthOut[];
+  signals: CustomerSignal[];
+  generated_at: string;
+}
+
 // --- AI Agents --------------------------------------------------------------
 
 export interface AgentInsight {

@@ -13,6 +13,7 @@ import {
   Siren,
   Sparkles,
   Target,
+  Users,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -23,6 +24,7 @@ const NAV = [
   { href: "/agents", label: "AI Agents", icon: Bot },
   { href: "/goals", label: "Goals", icon: Target },
   { href: "/projects", label: "Projects", icon: FolderKanban },
+  { href: "/customers", label: "Customers", icon: Users },
   { href: "/recommendations", label: "Recommendations", icon: Lightbulb },
   { href: "/twin", label: "Business Twin", icon: Network },
   { href: "/graph", label: "Knowledge Graph", icon: Share2 },

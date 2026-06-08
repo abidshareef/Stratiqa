@@ -5,6 +5,7 @@ import type {
   AgentRoster,
   AuthResult,
   BusinessBlueprintOut,
+  CustomerOverview,
   DiscoveryResult,
   FounderInterview,
   GraphOut,
@@ -175,4 +176,10 @@ export async function askAgent(
     method: "POST",
     body: { query },
   });
+}
+
+// --- Customer Intelligence ---------------------------------------------------
+
+export async function getCustomers(): Promise<CustomerOverview> {
+  return apiFetch<CustomerOverview>("/customers");
 }
