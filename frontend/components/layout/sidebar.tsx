@@ -14,6 +14,7 @@ import {
   Siren,
   Sparkles,
   Target,
+  TriangleAlert,
   Users,
 } from "lucide-react";
 
@@ -22,6 +23,7 @@ import { cn } from "@/lib/utils";
 const NAV = [
   { href: "/dashboard", label: "STRATIQA One", icon: LayoutDashboard },
   { href: "/war-room", label: "War Room", icon: Siren },
+  { href: "/alerts", label: "Alerts", icon: TriangleAlert },
   { href: "/agents", label: "AI Agents", icon: Bot },
   { href: "/goals", label: "Goals", icon: Target },
   { href: "/projects", label: "Projects", icon: FolderKanban },

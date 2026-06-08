@@ -9,6 +9,7 @@ import type {
   DiscoveryResult,
   FounderInterview,
   GraphOut,
+  MonitoringOverview,
   ProductOverview,
 } from "./types";
 
@@ -189,4 +190,10 @@ export async function getCustomers(): Promise<CustomerOverview> {
 
 export async function getProducts(): Promise<ProductOverview> {
   return apiFetch<ProductOverview>("/products");
+}
+
+// --- Alerts & Monitoring -----------------------------------------------------
+
+export async function getAlerts(): Promise<MonitoringOverview> {
+  return apiFetch<MonitoringOverview>("/alerts");
 }

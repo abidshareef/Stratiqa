@@ -28,7 +28,7 @@ from app.schemas.stratiqa_one import (
     RiskItem,
     WarRoom,
 )
-from app.services import business_twin, recommendation_engine
+from app.services import business_twin, monitoring, recommendation_engine
 
 
 def _risks(db: DBSession, org_id: uuid.UUID, only_critical: bool = False) -> list[RiskItem]:
@@ -174,13 +174,22 @@ def war_room(db: DBSession, org_id: uuid.UUID) -> WarRoom:
 
 
 def _business_events(db: DBSession, org_id: uuid.UUID) -> list[dict]:
-    """A lightweight activity stream from recent recommendations and risks."""
+    """A lightweight activity stream — the top live alerts (across every
+    domain) followed by recently generated recommendations."""
     events: list[dict] = []
+    for alert in monitoring.top_open_alerts(db, org_id, limit=4):
+        events.append(
+            {
+                "type": f"alert_{alert.severity}",
+                "title": alert.title,
+                "at": alert.at.isoformat() if alert.at else None,
+            }
+        )
     recs = db.scalars(
         select(Recommendation)
         .where(Recommendation.organization_id == org_id)
         .order_by(Recommendation.created_at.desc())
-        .limit(5)
+        .limit(4)
     ).all()
     for r in recs:
         events.append(

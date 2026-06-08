@@ -6,6 +6,7 @@ from fastapi import APIRouter
 
 from app.api.v1 import (
     agents,
+    alerts,
     analytics,
     auth,
     briefs,
@@ -38,3 +39,4 @@ api_router.include_router(knowledge_graph.router)
 api_router.include_router(agents.router)
 api_router.include_router(customers.router)
 api_router.include_router(products.router)
+api_router.include_router(alerts.router)

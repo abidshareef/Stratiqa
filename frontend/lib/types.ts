@@ -427,6 +427,48 @@ export interface ProductOverview {
   generated_at: string;
 }
 
+// --- Alerts & Monitoring ----------------------------------------------------
+
+export interface AlertItem {
+  title: string;
+  detail: string;
+  severity: "info" | "warning" | "danger";
+  category:
+    | "risk"
+    | "customer"
+    | "inventory"
+    | "kpi"
+    | "goal"
+    | "delivery"
+    | "system";
+  source: string;
+  status: "open" | "resolved";
+  at: string | null;
+  derived: boolean;
+}
+
+export interface IncidentOut {
+  id: string;
+  incident_type: string;
+  description: string | null;
+  resolved: boolean;
+}
+
+export interface MonitoringStats {
+  total_open: number;
+  critical: number;
+  warning: number;
+  incidents_open: number;
+  anomalies: number;
+}
+
+export interface MonitoringOverview {
+  stats: MonitoringStats;
+  alerts: AlertItem[];
+  incidents: IncidentOut[];
+  generated_at: string;
+}
+
 // --- AI Agents --------------------------------------------------------------
 
 export interface AgentInsight {

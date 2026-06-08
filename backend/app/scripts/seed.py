@@ -15,10 +15,11 @@ from sqlalchemy import select
 
 from app.core.database import Base, SessionLocal, engine
 from app.core.security import hash_password
-from app.models.analytics import KPI, Opportunity
+from app.models.analytics import KPI, Anomaly, Opportunity
 from app.models.customers import Customer, CustomerHealth, CustomerInsight, SupportTicket
 from app.models.goals import GoalProgress, StrategicGoal
 from app.models.identity import Organization, OrganizationUser, Role, User
+from app.models.monitoring import Alert, Incident
 from app.models.products import DemandForecast, Inventory, Product, ProductMetric
 from app.models.projects import Milestone, Project, ProjectRisk, Task
 from app.schemas.discovery import FounderInterview
@@ -352,6 +353,50 @@ def seed() -> None:
                     },
                 )
             )
+
+        # --- Monitoring: persisted system alerts, anomalies, incidents ---
+        # These sit alongside the alerts the monitoring service derives live
+        # from business data (risks, churn, stock, KPIs, goals).
+        db.add_all(
+            [
+                Alert(
+                    organization_id=org.id,
+                    title="Database CPU sustained above 85%",
+                    severity="warning",
+                    status="open",
+                ),
+                Alert(
+                    organization_id=org.id,
+                    title="Nightly analytics ETL completed",
+                    severity="info",
+                    status="resolved",
+                ),
+            ]
+        )
+        db.add(
+            Anomaly(
+                organization_id=org.id,
+                anomaly_type="revenue_dip",
+                severity="high",
+                description="Monthly revenue fell ~15% MoM — outside normal variance.",
+            )
+        )
+        db.add_all(
+            [
+                Incident(
+                    organization_id=org.id,
+                    incident_type="service_degradation",
+                    description="Customer portal latency spike during peak hours.",
+                    resolved=False,
+                ),
+                Incident(
+                    organization_id=org.id,
+                    incident_type="failed_deployment",
+                    description="Rolled back v2.3 release after a migration error.",
+                    resolved=True,
+                ),
+            ]
+        )
 
         db.flush()
 
