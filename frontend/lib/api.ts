@@ -9,6 +9,7 @@ import type {
   DiscoveryResult,
   FounderInterview,
   GraphOut,
+  ProductOverview,
 } from "./types";
 
 const API_BASE =
@@ -182,4 +183,10 @@ export async function askAgent(
 
 export async function getCustomers(): Promise<CustomerOverview> {
   return apiFetch<CustomerOverview>("/customers");
+}
+
+// --- Product Intelligence ----------------------------------------------------
+
+export async function getProducts(): Promise<ProductOverview> {
+  return apiFetch<ProductOverview>("/products");
 }

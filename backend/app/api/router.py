@@ -14,6 +14,7 @@ from app.api.v1 import (
     goals,
     knowledge_graph,
     organizations,
+    products,
     projects,
     recommendations,
     reports,
@@ -36,3 +37,4 @@ api_router.include_router(twin.router)
 api_router.include_router(knowledge_graph.router)
 api_router.include_router(agents.router)
 api_router.include_router(customers.router)
+api_router.include_router(products.router)

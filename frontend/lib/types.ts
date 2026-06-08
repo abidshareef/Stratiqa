@@ -390,6 +390,43 @@ export interface CustomerOverview {
   generated_at: string;
 }
 
+// --- Product Intelligence ---------------------------------------------------
+
+export interface ProductOut {
+  id: string;
+  product_name: string;
+  category: string | null;
+  sales_count: number;
+  revenue: number | null;
+  quantity: number;
+  reorder_level: number;
+  stock_status: "ok" | "low" | "out";
+  demand_trend: "up" | "down" | "flat" | null;
+}
+
+export interface ProductStats {
+  total_products: number;
+  total_revenue: number;
+  low_stock_count: number;
+  top_product: string | null;
+}
+
+export interface ProductSignal {
+  title: string;
+  finding: string;
+  severity: "info" | "warning" | "danger" | "success";
+  confidence_score: number;
+  data_sources: string[];
+  recommended_action: string | null;
+}
+
+export interface ProductOverview {
+  stats: ProductStats;
+  products: ProductOut[];
+  signals: ProductSignal[];
+  generated_at: string;
+}
+
 // --- AI Agents --------------------------------------------------------------
 
 export interface AgentInsight {

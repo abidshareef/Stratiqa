@@ -19,6 +19,7 @@ from app.models.analytics import KPI, Opportunity
 from app.models.customers import Customer, CustomerHealth, CustomerInsight, SupportTicket
 from app.models.goals import GoalProgress, StrategicGoal
 from app.models.identity import Organization, OrganizationUser, Role, User
+from app.models.products import DemandForecast, Inventory, Product, ProductMetric
 from app.models.projects import Milestone, Project, ProjectRisk, Task
 from app.schemas.discovery import FounderInterview
 from app.services import (
@@ -317,6 +318,40 @@ def seed() -> None:
                         ),
                     )
                 )
+
+        # --- Product line: catalog, inventory, sales, demand forecasts ---
+        # A robotics manufacturer's line: two SKUs run low (trips stockout
+        # signal), the robotic arm dominates revenue (concentration signal).
+        # (name, category, sales, revenue, qty, reorder, demand trend)
+        product_specs = [
+            ("Robotic Arm RA-7", "Assemblies", 85, 1_275_000, 12, 5, "up"),
+            ("Servo Motor X1", "Components", 1_200, 480_000, 40, 50, "up"),
+            ("Vision Sensor V2", "Components", 640, 320_000, 8, 20, "flat"),
+            ("Controller Unit C9", "Electronics", 310, 217_000, 90, 30, "down"),
+            ("Maintenance Kit MK-1", "Service", 540, 162_000, 200, 50, "up"),
+        ]
+        for name, category, sales, revenue, qty, reorder, trend in product_specs:
+            prod = Product(
+                organization_id=org.id, product_name=name, category=category
+            )
+            db.add(prod)
+            db.flush()
+            db.add(Inventory(product_id=prod.id, quantity=qty, reorder_level=reorder))
+            db.add(
+                ProductMetric(
+                    product_id=prod.id, sales_count=sales, revenue=revenue
+                )
+            )
+            db.add(
+                DemandForecast(
+                    product_id=prod.id,
+                    forecast_data={
+                        "trend": trend,
+                        "next_30d_units": int(sales / 12),
+                        "basis": "trailing 12-month sales",
+                    },
+                )
+            )
 
         db.flush()
 
