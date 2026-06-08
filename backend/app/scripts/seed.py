@@ -25,9 +25,11 @@ from app.models.projects import Milestone, Project, ProjectRisk, Task
 from app.schemas.discovery import FounderInterview
 from app.services import (
     agents,
+    brief_generator,
     discovery_service,
     knowledge_graph,
     recommendation_engine,
+    report_generator,
 )
 
 DEMO_EMAIL = "founder@stratiqa.dev"
@@ -423,6 +425,14 @@ def seed() -> None:
 
         # Generate grounded recommendations from the seeded data.
         recs = recommendation_engine.refresh_recommendations(db, org.id)
+
+        # Pre-generate executive collateral so the Reports and Briefs surfaces
+        # are populated out of the box (otherwise a fresh demo lands on empty
+        # lists). All grounded in the seeded data above.
+        for report_type in ("executive", "weekly"):
+            report_generator.generate(db, org.id, report_type, generated_by=user.id)
+        for brief_type in ("morning", "evening"):
+            brief_generator.generate(db, org.id, brief_type)
 
         # Register the specialist agent roster and materialize the knowledge graph
         # (knowledge graph is built last so it captures the recommendations too).
