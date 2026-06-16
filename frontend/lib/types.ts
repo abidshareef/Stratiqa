@@ -513,3 +513,89 @@ export interface AgentAskResponse {
   data_sources: string[];
   insights: AgentInsight[];
 }
+
+// --- Data ingestion (file uploads) ------------------------------------------
+
+export type IngestTarget = "kpi" | "customers" | "products";
+
+export interface UploadOut {
+  id: string;
+  filename: string;
+  file_kind: string;
+  status: string;
+  row_count: number;
+  columns: string[];
+  created_at: string;
+}
+
+export interface SuggestedMapping {
+  target?: IngestTarget;
+  fields?: Record<string, string>;
+  kpi_label?: string | null;
+}
+
+export interface UploadDetail extends UploadOut {
+  preview_rows: Record<string, unknown>[];
+  extracted_text: string | null;
+  suggested_mapping: SuggestedMapping;
+  commit_summary: Record<string, number | string>;
+  error: string | null;
+}
+
+export interface CommitMapping {
+  target: IngestTarget;
+  fields: Record<string, string>;
+  kpi_label?: string | null;
+}
+
+export interface AnalysisChanges {
+  new_insights: string[];
+  resolved_insights: string[];
+  unchanged: number;
+}
+
+export interface CommitResult {
+  upload_id: string;
+  target: string;
+  created: Record<string, number>;
+  skipped: number;
+  total: number;
+  recommendations_refreshed: number;
+  analysis_changes: AnalysisChanges;
+}
+
+// --- Audit & Governance (Section 16) ---
+
+export interface AuditEntry {
+  id: string;
+  action: string;
+  category: "security" | "data" | "other";
+  actor: string;
+  resource: string | null;
+  detail: string | null;
+  ip_address: string | null;
+  at: string | null;
+}
+
+export interface GovernanceStats {
+  total_events: number;
+  security_events: number;
+  failed_logins: number;
+  data_events: number;
+}
+
+export interface DecisionGovernance {
+  total_decisions: number;
+  with_reasoning: number;
+  with_confidence: number;
+  with_data_sources: number;
+  explainability_coverage: number;
+  avg_confidence: number;
+}
+
+export interface GovernanceOverview {
+  stats: GovernanceStats;
+  decisions: DecisionGovernance;
+  trail: AuditEntry[];
+  generated_at: string;
+}

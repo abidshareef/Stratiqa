@@ -13,6 +13,7 @@ from app.api.v1 import (
     customers,
     discovery,
     goals,
+    governance,
     knowledge_graph,
     organizations,
     products,
@@ -21,6 +22,7 @@ from app.api.v1 import (
     reports,
     stratiqa_one,
     twin,
+    uploads,
 )
 
 api_router = APIRouter()
@@ -40,3 +42,5 @@ api_router.include_router(agents.router)
 api_router.include_router(customers.router)
 api_router.include_router(products.router)
 api_router.include_router(alerts.router)
+api_router.include_router(uploads.router)
+api_router.include_router(governance.router)

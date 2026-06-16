@@ -11,10 +11,12 @@ import {
   Network,
   Package,
   Share2,
+  ShieldCheck,
   Siren,
   Sparkles,
   Target,
   TriangleAlert,
+  Upload,
   Users,
 } from "lucide-react";
 
@@ -29,10 +31,12 @@ const NAV = [
   { href: "/projects", label: "Projects", icon: FolderKanban },
   { href: "/customers", label: "Customers", icon: Users },
   { href: "/products", label: "Products", icon: Package },
+  { href: "/data", label: "Data Ingestion", icon: Upload },
   { href: "/recommendations", label: "Recommendations", icon: Lightbulb },
   { href: "/twin", label: "Business Twin", icon: Network },
   { href: "/graph", label: "Knowledge Graph", icon: Share2 },
   { href: "/reports", label: "Reports", icon: FileText },
+  { href: "/governance", label: "Governance", icon: ShieldCheck },
   { href: "/ask", label: "Ask", icon: Sparkles },
 ];
 

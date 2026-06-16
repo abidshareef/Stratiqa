@@ -26,6 +26,11 @@ celery==5.4.0
 # --- Vector memory ---
 qdrant-client==1.12.1
 
+# --- File ingestion (deterministic parsing of uploaded business files) ---
+openpyxl==3.1.5      # Excel (.xlsx)
+pdfplumber==0.11.9   # PDF text + table extraction
+python-docx==1.2.0   # Word (.docx)
+
 # --- Utilities ---
 python-dotenv==1.0.1
 httpx==0.28.1

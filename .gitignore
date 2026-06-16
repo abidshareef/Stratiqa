@@ -12,6 +12,9 @@ env/
 .coverage
 htmlcov/
 
+# Uploaded business files (raw ingestion storage)
+backend/var/
+
 # Local dev / test SQLite databases (production uses PostgreSQL)
 *.db
 *.sqlite

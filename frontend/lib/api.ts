@@ -5,12 +5,17 @@ import type {
   AgentRoster,
   AuthResult,
   BusinessBlueprintOut,
+  CommitMapping,
+  CommitResult,
   CustomerOverview,
   DiscoveryResult,
   FounderInterview,
+  GovernanceOverview,
   GraphOut,
   MonitoringOverview,
   ProductOverview,
+  UploadDetail,
+  UploadOut,
 } from "./types";
 
 const API_BASE =
@@ -196,4 +201,69 @@ export async function getProducts(): Promise<ProductOverview> {
 
 export async function getAlerts(): Promise<MonitoringOverview> {
   return apiFetch<MonitoringOverview>("/alerts");
+}
+
+// --- Audit & Governance ------------------------------------------------------
+
+export async function getGovernance(): Promise<GovernanceOverview> {
+  return apiFetch<GovernanceOverview>("/governance");
+}
+
+// --- Data ingestion (file uploads) -------------------------------------------
+
+/**
+ * Upload a business file. Uses multipart/form-data, so it bypasses the
+ * JSON-only `apiFetch` — the browser sets the multipart boundary itself.
+ */
+export async function uploadFile(file: File): Promise<UploadDetail> {
+  const { accessToken, organization } = useAuthStore.getState();
+  const headers: Record<string, string> = {};
+  if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
+  if (organization) headers["X-Organization-Id"] = organization.id;
+
+  const form = new FormData();
+  form.append("file", file);
+
+  const res = await fetch(`${API_BASE}/uploads`, {
+    method: "POST",
+    headers,
+    body: form,
+  });
+
+  if (res.status === 401) {
+    useAuthStore.getState().clear();
+    throw new ApiError(401, "Session expired. Please sign in again.");
+  }
+  if (!res.ok) {
+    let detail = `Upload failed (${res.status})`;
+    try {
+      const data = await res.json();
+      if (data?.detail) {
+        detail =
+          typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail);
+      }
+    } catch {
+      /* non-JSON error body */
+    }
+    throw new ApiError(res.status, detail);
+  }
+  return (await res.json()) as UploadDetail;
+}
+
+export async function listUploads(): Promise<UploadOut[]> {
+  return apiFetch<UploadOut[]>("/uploads");
+}
+
+export async function commitUpload(
+  id: string,
+  mapping: CommitMapping,
+): Promise<CommitResult> {
+  return apiFetch<CommitResult>(`/uploads/${id}/commit`, {
+    method: "POST",
+    body: mapping,
+  });
+}
+
+export async function deleteUpload(id: string): Promise<void> {
+  await apiFetch(`/uploads/${id}`, { method: "DELETE" });
 }
