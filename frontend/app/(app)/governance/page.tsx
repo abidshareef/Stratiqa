@@ -18,11 +18,21 @@ const CATEGORY_TONE: Record<AuditEntry["category"], "info" | "warning" | "neutra
   other: "neutral",
 };
 
-function categoryIcon(entry: AuditEntry) {
-  if (entry.action.endsWith(".failed")) return ShieldX;
-  if (entry.category === "data") return Upload;
-  if (entry.category === "security") return KeyRound;
-  return ShieldCheck;
+function CategoryIcon({
+  entry,
+  className,
+}: {
+  entry: AuditEntry;
+  className?: string;
+}) {
+  const Icon = entry.action.endsWith(".failed")
+    ? ShieldX
+    : entry.category === "data"
+      ? Upload
+      : entry.category === "security"
+        ? KeyRound
+        : ShieldCheck;
+  return <Icon className={className} />;
 }
 
 function formatAction(action: string) {
@@ -223,12 +233,12 @@ function CoverageBar({
 }
 
 function AuditRow({ entry }: { entry: AuditEntry }) {
-  const Icon = categoryIcon(entry);
   const failed = entry.action.endsWith(".failed");
   return (
     <Card>
       <CardContent className="flex items-start gap-3 p-3">
-        <Icon
+        <CategoryIcon
+          entry={entry}
           className={`mt-0.5 size-4 shrink-0 ${
             failed ? "text-danger" : "text-muted-foreground"
           }`}

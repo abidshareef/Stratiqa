@@ -53,16 +53,19 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex flex-1 items-center justify-center px-4">
+    <main className="dot-field flex flex-1 items-center justify-center px-4">
       <div className="w-full max-w-sm animate-rise">
-        <div className="mb-8 text-center">
+        <div className="mb-8 flex flex-col items-center text-center">
+          <div className="mb-4 flex size-12 items-center justify-center rounded-xl bg-primary/15 ring-1 ring-inset ring-primary/30">
+            <span className="metric text-xl font-bold text-primary">S</span>
+          </div>
           <h1 className="text-2xl font-semibold tracking-tight">STRATIQA</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             AI-Powered Business Operating System
           </p>
         </div>
 
-        <div className="rounded-lg border border-border bg-card p-6">
+        <div className="rounded-xl border border-border bg-card p-6 shadow-2xl shadow-black/30">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
             <div className="space-y-1.5">
               <Label htmlFor="email">Email</Label>

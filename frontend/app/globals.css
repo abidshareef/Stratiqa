@@ -53,11 +53,50 @@
   border-color: var(--border);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Selection picks up the brand without shouting. */
+::selection {
+  background: color-mix(in srgb, var(--primary) 35%, transparent);
+  color: var(--foreground);
+}
+
+/* Slim, surface-toned scrollbars — they read as part of the chrome, not a default. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border: 2px solid var(--background);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3a3a;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Consistent, slightly inset keyboard focus ring across interactive elements. */
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px color-mix(in srgb, var(--primary) 70%, transparent);
+  border-radius: var(--radius-md);
 }
 
 /* Metric numerals use the mono face per the design system. */
@@ -80,4 +119,43 @@ body {
 
 .animate-rise {
   animation: stratiqa-rise 0.35s ease-out both;
+}
+
+/* Stagger helper — children rise in sequence for a composed, intentional feel. */
+.stagger > * {
+  animation: stratiqa-rise 0.4s ease-out both;
+}
+.stagger > *:nth-child(2) { animation-delay: 0.04s; }
+.stagger > *:nth-child(3) { animation-delay: 0.08s; }
+.stagger > *:nth-child(4) { animation-delay: 0.12s; }
+.stagger > *:nth-child(5) { animation-delay: 0.16s; }
+.stagger > *:nth-child(6) { animation-delay: 0.2s; }
+
+/* Subtle interactive lift — depth from shadow + a 1px rise, never a bounce. */
+.lift {
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+.lift:hover {
+  transform: translateY(-2px);
+  border-color: #333333;
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.02) inset,
+    0 8px 24px -12px rgba(0, 0, 0, 0.7);
+}
+
+/* Faint dotted field for hero/empty surfaces — texture without gradient. */
+.dot-field {
+  background-image: radial-gradient(var(--border) 1px, transparent 1px);
+  background-size: 22px 22px;
+  background-position: -1px -1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .animate-rise,
+  .stagger > * { animation: none; }
+  .lift { transition: none; }
 }

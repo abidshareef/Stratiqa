@@ -23,7 +23,9 @@ export function EChart({
     if (!el.current) return;
     const instance = echarts.init(el.current, null, { renderer: "canvas" });
     chart.current = instance;
-    const ro = new ResizeObserver(() => instance.resize());
+    const ro = new ResizeObserver(() => {
+      if (!instance.isDisposed()) instance.resize();
+    });
     ro.observe(el.current);
     return () => {
       ro.disconnect();
