@@ -24,7 +24,13 @@ export function EChart({
     const instance = echarts.init(el.current, null, { renderer: "canvas" });
     chart.current = instance;
     const ro = new ResizeObserver(() => {
-      if (!instance.isDisposed()) instance.resize();
+      if (chart.current && !chart.current.isDisposed()) {
+        try {
+          chart.current.resize();
+        } catch (e) {
+          console.error("EChart resize failed:", e);
+        }
+      }
     });
     ro.observe(el.current);
     return () => {

@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     debug: bool = True
     project_name: str = "STRATIQA"
     api_prefix: str = "/api/v1"
-    cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
+    cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:3000", "http://127.0.0.1:3000", "http://192.168.1.5:3000"])
 
     # --- Security ---
     jwt_secret: str = "dev-insecure-secret-change-me"
