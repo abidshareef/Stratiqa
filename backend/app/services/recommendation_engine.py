@@ -32,6 +32,36 @@ class Candidate:
     data_sources: str
 
 
+@dataclass
+class AnalysisChange:
+    """What a fresh analysis pass changed versus the previous one.
+
+    Lets the platform *recognize* how new incoming data moved the picture, not
+    just that it was re-analyzed: which insights newly appeared, which were
+    resolved (no longer supported by the data), and how many held steady.
+    """
+
+    new_insights: list[str]
+    resolved_insights: list[str]
+    unchanged: int
+
+    @property
+    def changed(self) -> bool:
+        return bool(self.new_insights or self.resolved_insights)
+
+    def summary(self) -> str:
+        if not self.changed:
+            return "New data ingested; analysis unchanged (no new or resolved insights)."
+        parts: list[str] = []
+        if self.new_insights:
+            parts.append(f"{len(self.new_insights)} new insight(s): {'; '.join(self.new_insights)}")
+        if self.resolved_insights:
+            parts.append(
+                f"{len(self.resolved_insights)} resolved: {'; '.join(self.resolved_insights)}"
+            )
+        return "New data shifted the analysis — " + ". ".join(parts) + "."
+
+
 def _overdue(tasks: list[Task]) -> list[Task]:
     today = date.today()
     return [t for t in tasks if t.due_date and t.due_date < today and t.status != "done"]
@@ -169,6 +199,19 @@ def _kpi_candidates(db: DBSession, org_id: uuid.UUID) -> list[Candidate]:
 
 def refresh_recommendations(db: DBSession, org_id: uuid.UUID) -> list[Recommendation]:
     """Regenerate pending recommendations for an org from current data."""
+    created, _ = refresh_with_changes(db, org_id)
+    return created
+
+
+def refresh_with_changes(
+    db: DBSession, org_id: uuid.UUID
+) -> tuple[list[Recommendation], AnalysisChange]:
+    """Regenerate pending recommendations and report how the analysis changed.
+
+    Snapshots the existing insight set *before* it is rebuilt, then diffs it
+    against the freshly generated set so callers ingesting new data can show the
+    user exactly what moved.
+    """
     # Clear stale, still-pending recommendations to avoid duplicates.
     existing = db.scalars(
         select(Recommendation).where(
@@ -176,8 +219,10 @@ def refresh_recommendations(db: DBSession, org_id: uuid.UUID) -> list[Recommenda
             Recommendation.status == "pending",
         )
     ).all()
+    before = {rec.title for rec in existing}
     for rec in existing:
         db.delete(rec)
+    db.flush()  # ensure deletes settle before re-inserting same-titled rows
 
     created: list[Recommendation] = []
     for c in generate_candidates(db, org_id):
@@ -195,4 +240,11 @@ def refresh_recommendations(db: DBSession, org_id: uuid.UUID) -> list[Recommenda
         db.add(rec)
         created.append(rec)
     db.flush()
-    return created
+
+    after = {rec.title for rec in created}
+    change = AnalysisChange(
+        new_insights=sorted(after - before),
+        resolved_insights=sorted(before - after),
+        unchanged=len(after & before),
+    )
+    return created, change

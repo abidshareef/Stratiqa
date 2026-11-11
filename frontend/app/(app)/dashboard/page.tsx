@@ -3,10 +3,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { RefreshCw } from "lucide-react";
 
-import { ApiError, apiFetch } from "@/lib/api";
+import { ApiError, apiFetch, getBlueprint } from "@/lib/api";
 import { areaTrend, C, gauge, healthBars } from "@/lib/charts";
 import type {
   AnalyticsOverview,
+  BusinessBlueprintOut,
   ExecutiveHome,
   RecommendationOut,
 } from "@/lib/types";
@@ -21,6 +22,7 @@ import { Empty, Section, SkeletonBlock } from "@/components/dashboard/primitives
 export default function DashboardPage() {
   const [home, setHome] = useState<ExecutiveHome | null>(null);
   const [analytics, setAnalytics] = useState<AnalyticsOverview | null>(null);
+  const [blueprint, setBlueprint] = useState<BusinessBlueprintOut | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -51,6 +53,18 @@ export default function DashboardPage() {
       active = false;
     };
   }, [fetchAll]);
+
+  // Business DNA is optional context — load it separately so a missing
+  // blueprint never blocks the dashboard.
+  useEffect(() => {
+    let active = true;
+    getBlueprint()
+      .then((bp) => active && setBlueprint(bp))
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
 
   async function refreshRecs() {
     setRefreshing(true);
@@ -93,9 +107,26 @@ export default function DashboardPage() {
   return (
     <div className="space-y-10">
       {/* Briefing line */}
-      <section className="animate-rise space-y-1">
+      <section className="animate-rise space-y-2">
         <h1 className="text-2xl font-semibold tracking-tight">{home.welcome}</h1>
         <p className="text-sm text-muted">{home.summary}</p>
+        {blueprint && (
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
+              Business DNA
+            </span>
+            {[
+              blueprint.blueprint_json.growth_profile,
+              blueprint.blueprint_json.risk_profile,
+              blueprint.blueprint_json.operational_complexity,
+              blueprint.blueprint_json.market_type,
+            ].map((v, i) => (
+              <Badge key={i} tone="neutral" className="capitalize">
+                {String(v).replace(/_/g, " ")}
+              </Badge>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* ===================== INTELLIGENCE FIRST ===================== */}

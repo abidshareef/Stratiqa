@@ -47,8 +47,10 @@ from app.models.recommendations import (
 )
 from app.models.reporting import ExecutiveBrief, Report, ReportAsset
 from app.models.twin import Simulation, SimulationResult, TwinModel, TwinSnapshot
+from app.models.uploads import DataUpload
 
 __all__ = [
+    "DataUpload",
     "Agent", "AgentInteraction", "AgentTask",
     "KPI", "Anomaly", "Forecast", "Opportunity",
     "Customer", "CustomerHealth", "CustomerInsight", "SupportTicket",

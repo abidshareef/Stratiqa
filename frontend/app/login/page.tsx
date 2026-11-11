@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -52,16 +53,19 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex flex-1 items-center justify-center px-4">
+    <main className="dot-field flex flex-1 items-center justify-center px-4">
       <div className="w-full max-w-sm animate-rise">
-        <div className="mb-8 text-center">
+        <div className="mb-8 flex flex-col items-center text-center">
+          <div className="mb-4 flex size-12 items-center justify-center rounded-xl bg-primary/15 ring-1 ring-inset ring-primary/30">
+            <span className="metric text-xl font-bold text-primary">S</span>
+          </div>
           <h1 className="text-2xl font-semibold tracking-tight">STRATIQA</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             AI-Powered Business Operating System
           </p>
         </div>
 
-        <div className="rounded-lg border border-border bg-card p-6">
+        <div className="rounded-xl border border-border bg-card p-6 shadow-2xl shadow-black/30">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
             <div className="space-y-1.5">
               <Label htmlFor="email">Email</Label>
@@ -104,6 +108,12 @@ export default function LoginPage() {
         </div>
 
         <p className="mt-4 text-center text-xs text-muted-foreground">
+          New to STRATIQA?{" "}
+          <Link href="/signup" className="text-primary hover:underline">
+            Create an account
+          </Link>
+        </p>
+        <p className="mt-2 text-center text-xs text-muted-foreground">
           Demo: founder@stratiqa.dev / stratiqa123
         </p>
       </div>

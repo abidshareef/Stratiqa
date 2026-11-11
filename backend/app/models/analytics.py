@@ -5,11 +5,10 @@ from __future__ import annotations
 from datetime import datetime
 
 from sqlalchemy import DateTime, Numeric, String, Text, func
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base, UUIDPk
-from app.models._types import fk
+from app.models._types import JSONB, fk
 
 
 class KPI(Base):

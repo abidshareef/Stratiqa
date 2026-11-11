@@ -15,11 +15,22 @@ from sqlalchemy import select
 
 from app.core.database import Base, SessionLocal, engine
 from app.core.security import hash_password
-from app.models.analytics import KPI, Opportunity
+from app.models.analytics import KPI, Anomaly, Opportunity
+from app.models.customers import Customer, CustomerHealth, CustomerInsight, SupportTicket
 from app.models.goals import GoalProgress, StrategicGoal
 from app.models.identity import Organization, OrganizationUser, Role, User
+from app.models.monitoring import Alert, Incident
+from app.models.products import DemandForecast, Inventory, Product, ProductMetric
 from app.models.projects import Milestone, Project, ProjectRisk, Task
-from app.services import recommendation_engine
+from app.schemas.discovery import FounderInterview
+from app.services import (
+    agents,
+    brief_generator,
+    discovery_service,
+    knowledge_graph,
+    recommendation_engine,
+    report_generator,
+)
 
 DEMO_EMAIL = "founder@stratiqa.dev"
 DEMO_PASSWORD = "stratiqa123"  # demo only — never a real credential
@@ -269,10 +280,164 @@ def seed() -> None:
             ]
         )
 
+        # --- Customer base: health, churn risk, support, and insights ---
+        # A varied book of business so retention intelligence has real signal:
+        # two clearly at-risk accounts (churn >= 60) plus healthy anchors.
+        customer_specs = [
+            ("Atlas Manufacturing", "Enterprise", 42, 72, 3),
+            ("Meridian Logistics", "Enterprise", 55, 64, 2),
+            ("Cobalt Devices", "Mid-Market", 68, 38, 1),
+            ("Northstar Foods", "Mid-Market", 81, 18, 0),
+            ("Pioneer Aerospace", "Enterprise", 88, 12, 0),
+            ("Vertex Tooling", "SMB", 76, 22, 0),
+        ]
+        for name, segment, health, churn, open_tickets in customer_specs:
+            cust = Customer(
+                organization_id=org.id, customer_name=name, segment=segment
+            )
+            db.add(cust)
+            db.flush()
+            db.add(
+                CustomerHealth(
+                    customer_id=cust.id, health_score=health, churn_risk=churn
+                )
+            )
+            for t in range(open_tickets):
+                db.add(
+                    SupportTicket(
+                        customer_id=cust.id,
+                        title=f"Escalation #{t + 1} from {name}",
+                        status="open",
+                        priority="high" if churn >= 60 else "medium",
+                    )
+                )
+            if churn >= 60:
+                db.add(
+                    CustomerInsight(
+                        customer_id=cust.id,
+                        insight=(
+                            f"{name} shows churn risk {churn}% with "
+                            f"{open_tickets} open ticket(s) — schedule an executive review."
+                        ),
+                    )
+                )
+
+        # --- Product line: catalog, inventory, sales, demand forecasts ---
+        # A robotics manufacturer's line: two SKUs run low (trips stockout
+        # signal), the robotic arm dominates revenue (concentration signal).
+        # (name, category, sales, revenue, qty, reorder, demand trend)
+        product_specs = [
+            ("Robotic Arm RA-7", "Assemblies", 85, 1_275_000, 12, 5, "up"),
+            ("Servo Motor X1", "Components", 1_200, 480_000, 40, 50, "up"),
+            ("Vision Sensor V2", "Components", 640, 320_000, 8, 20, "flat"),
+            ("Controller Unit C9", "Electronics", 310, 217_000, 90, 30, "down"),
+            ("Maintenance Kit MK-1", "Service", 540, 162_000, 200, 50, "up"),
+        ]
+        for name, category, sales, revenue, qty, reorder, trend in product_specs:
+            prod = Product(
+                organization_id=org.id, product_name=name, category=category
+            )
+            db.add(prod)
+            db.flush()
+            db.add(Inventory(product_id=prod.id, quantity=qty, reorder_level=reorder))
+            db.add(
+                ProductMetric(
+                    product_id=prod.id, sales_count=sales, revenue=revenue
+                )
+            )
+            db.add(
+                DemandForecast(
+                    product_id=prod.id,
+                    forecast_data={
+                        "trend": trend,
+                        "next_30d_units": int(sales / 12),
+                        "basis": "trailing 12-month sales",
+                    },
+                )
+            )
+
+        # --- Monitoring: persisted system alerts, anomalies, incidents ---
+        # These sit alongside the alerts the monitoring service derives live
+        # from business data (risks, churn, stock, KPIs, goals).
+        db.add_all(
+            [
+                Alert(
+                    organization_id=org.id,
+                    title="Database CPU sustained above 85%",
+                    severity="warning",
+                    status="open",
+                ),
+                Alert(
+                    organization_id=org.id,
+                    title="Nightly analytics ETL completed",
+                    severity="info",
+                    status="resolved",
+                ),
+            ]
+        )
+        db.add(
+            Anomaly(
+                organization_id=org.id,
+                anomaly_type="revenue_dip",
+                severity="high",
+                description="Monthly revenue fell ~15% MoM — outside normal variance.",
+            )
+        )
+        db.add_all(
+            [
+                Incident(
+                    organization_id=org.id,
+                    incident_type="service_degradation",
+                    description="Customer portal latency spike during peak hours.",
+                    resolved=False,
+                ),
+                Incident(
+                    organization_id=org.id,
+                    incident_type="failed_deployment",
+                    description="Rolled back v2.3 release after a migration error.",
+                    resolved=True,
+                ),
+            ]
+        )
+
         db.flush()
+
+        # Run Business Discovery so the demo org has a Business DNA + Blueprint
+        # (the goal titles match the seeded goals above, so no duplicates).
+        discovery_service.run_discovery(
+            db,
+            org.id,
+            FounderInterview(
+                industry="Manufacturing",
+                business_model="Hardware + maintenance contracts",
+                company_size="51-200",
+                annual_revenue=4_200_000,
+                employee_count=120,
+                primary_goals=["Reach $5M ARR", "Launch EU market"],
+                main_challenges=[
+                    "Supplier delays on critical components",
+                    "EU regulatory readiness",
+                    "Hiring automation engineers",
+                ],
+                target_market="B2B enterprise manufacturers",
+            ),
+        )
 
         # Generate grounded recommendations from the seeded data.
         recs = recommendation_engine.refresh_recommendations(db, org.id)
+
+        # Pre-generate executive collateral so the Reports and Briefs surfaces
+        # are populated out of the box (otherwise a fresh demo lands on empty
+        # lists). All grounded in the seeded data above.
+        for report_type in ("executive", "weekly"):
+            report_generator.generate(db, org.id, report_type, generated_by=user.id)
+        for brief_type in ("morning", "evening"):
+            brief_generator.generate(db, org.id, brief_type)
+
+        # Register the specialist agent roster and materialize the knowledge graph
+        # (knowledge graph is built last so it captures the recommendations too).
+        agents.ensure_agents(db, org.id)
+        knowledge_graph.rebuild_graph(db, org.id)
 
         db.commit()
         print("Seed complete.")

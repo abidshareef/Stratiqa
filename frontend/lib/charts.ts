@@ -128,6 +128,101 @@ export function gauge(value: number, color: string = C.primary): EChartsCoreOpti
   };
 }
 
+/** Category → token color for the knowledge-graph nodes. */
+export const GRAPH_COLORS: Record<string, string> = {
+  organization: C.primary,
+  dna: C.info,
+  goal: C.success,
+  project: "#818cf8",
+  risk: C.danger,
+  kpi: C.warning,
+  customer: C.muted,
+  opportunity: "#34d399",
+  recommendation: "#a78bfa",
+};
+
+interface GNode {
+  id: string;
+  label: string;
+  category: string;
+  value: number | null;
+  detail: string | null;
+}
+interface GEdge {
+  source: string;
+  target: string;
+  type: string;
+}
+
+/** Force-directed knowledge graph of the org's entities + relationships. */
+export function graphChart(nodes: GNode[], edges: GEdge[]): EChartsCoreOption {
+  const categories = Array.from(new Set(nodes.map((n) => n.category)));
+  const detailById = new Map(nodes.map((n) => [n.id, n]));
+  return {
+    animationDuration: 600,
+    tooltip: {
+      backgroundColor: C.card,
+      borderColor: C.border,
+      textStyle: { color: C.text, fontSize: 12 },
+      formatter: (p: { dataType: string; data: Record<string, unknown> }) => {
+        if (p.dataType === "edge") {
+          const d = p.data as unknown as { source: string; target: string; value: string };
+          const s = detailById.get(d.source)?.label ?? "";
+          const t = detailById.get(d.target)?.label ?? "";
+          return `${s} <b>${d.value}</b> ${t}`;
+        }
+        const d = p.data as unknown as { name: string; detail?: string };
+        return d.detail ? `<b>${d.name}</b><br/>${d.detail}` : `<b>${d.name}</b>`;
+      },
+    },
+    legend: [
+      {
+        data: categories,
+        textStyle: { color: C.muted, fontSize: 10 },
+        icon: "circle",
+        top: 0,
+      },
+    ],
+    series: [
+      {
+        type: "graph",
+        layout: "force",
+        roam: true,
+        draggable: true,
+        zoom: 1.1,
+        categories: categories.map((c) => ({
+          name: c,
+          itemStyle: { color: GRAPH_COLORS[c] ?? C.muted },
+        })),
+        data: nodes.map((n) => ({
+          id: n.id,
+          name: n.label,
+          detail: n.detail,
+          category: categories.indexOf(n.category),
+          symbolSize: Math.max(8, Math.min(46, n.value ?? 12)),
+          value: n.value ?? 12,
+        })),
+        links: edges.map((e) => ({
+          source: e.source,
+          target: e.target,
+          value: e.type,
+        })),
+        force: { repulsion: 220, edgeLength: [70, 160], gravity: 0.08 },
+        label: {
+          show: true,
+          position: "right",
+          color: C.text,
+          fontSize: 10,
+          formatter: (p: { name: string }) =>
+            p.name.length > 22 ? `${p.name.slice(0, 20)}…` : p.name,
+        },
+        lineStyle: { color: C.border, width: 1, opacity: 0.7, curveness: 0.06 },
+        emphasis: { focus: "adjacency", lineStyle: { width: 2, color: C.muted } },
+      },
+    ],
+  };
+}
+
 /** Horizontal bars for project health, colored by score band. */
 export function healthBars(
   items: { name: string; score: number }[],
